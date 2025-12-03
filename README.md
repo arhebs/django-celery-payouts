@@ -433,6 +433,43 @@ You can exercise the same workflow locally using the `act` CLI if desired.
 
 ---
 
+## Production Deployment Strategy
+
+To deploy this service in a real production environment, a containerized approach on a managed cloud provider (such as
+AWS) works well.
+
+### Infrastructure Requirements
+
+- **Compute**: AWS ECS (Fargate) or Kubernetes (EKS) to run containers without managing servers.
+- **Database**: Managed PostgreSQL (for example AWS RDS) for automated backups and high availability.
+- **Broker/Cache**: Managed Redis (for example AWS ElastiCache).
+- **Load Balancer**: Application load balancer for SSL termination and routing to web containers.
+- **Secrets**: Secret manager or parameter store (for example AWS Secrets Manager or SSM Parameter Store) for secure
+  configuration.
+
+### Deployment Workflow
+
+1. **Build** – CI builds the Docker image from the `production` stage of the `Dockerfile` and pushes it to a container
+   registry (for example AWS ECR).
+2. **Migrations** – a dedicated job or init‑container runs `python manage.py migrate` against the managed PostgreSQL
+   instance before the new version is marked healthy.
+3. **Web service** – deployed as a scalable service running Gunicorn
+   (`gunicorn config.wsgi:application --bind 0.0.0.0:8000`), behind the load balancer.
+4. **Worker service** – deployed as a separate service running the Celery worker
+   (`celery -A config worker -l info`), with autoscaling based on queue depth or CPU usage.
+5. **Static files** – collected with `python manage.py collectstatic` and served from an object store (for example S3)
+   fronted by a CDN (for example CloudFront).
+
+### Environment Preparation
+
+1. Provision network infrastructure (VPC, private subnets, security groups).
+2. Launch managed PostgreSQL and Redis instances inside the VPC.
+3. Create target groups and an application load balancer pointing to the web service.
+4. Configure environment variables (`DATABASE_URL`, `REDIS_URL`, `SECRET_KEY`, `ALLOWED_HOSTS`, etc.) in the task or
+   pod definitions, sourcing sensitive values from the secrets store.
+
+---
+
 ## License
 
 This project is provided for evaluation and learning purposes. Use and adapt it within the constraints of your own
