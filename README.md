@@ -415,6 +415,17 @@ or change the following:
 
 Those aspects are intentionally out of scope here but the current structure is designed so they can be added cleanly.
 
+### Known Areas for Improvement
+
+The current implementation deliberately keeps some aspects simple for the purposes of the test task:
+
+- **Security** – Containers run as root in the Docker images. In production, the images should be adjusted to run the
+  Django and Celery processes as a non‑privileged user.
+- **Observability** – Logging uses the standard Python logging stack. For real deployments, structured logging
+  (for example JSON logs via `structlog` or similar) would make ingestion into observability tooling much easier.
+- **API semantics** – Status‑based update errors currently return `403 Forbidden`. It may be preferable to use
+  `409 Conflict` to signal that the requested state transition is invalid given the current resource state.
+
 ---
 
 ## CI Pipeline
