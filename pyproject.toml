@@ -25,6 +25,7 @@ redis = "*"
 django-filter = "*"
 django-environ = "*"
 drf-spectacular = "*"
+dj-database-url = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
