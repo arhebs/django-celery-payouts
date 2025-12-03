@@ -20,6 +20,7 @@ python = "^3.11"
 django = "^4.2"
 djangorestframework = "^3.14"
 celery = "^5.3"
+gunicorn = "*"
 psycopg = { extras = ["binary"], version = "*" }
 redis = "*"
 django-filter = "*"
