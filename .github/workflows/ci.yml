@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: payouts_db
+          POSTGRES_USER: payouts_user
+          POSTGRES_PASSWORD: payouts_pass
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd="pg_isready -U payouts_user -d payouts_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 56379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgres://payouts_user:payouts_pass@localhost:55432/payouts_db
+      REDIS_URL: redis://localhost:56379/0
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --no-ansi
+
+      - name: Install Postgres client
+        run: |
+          if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update || apt-get update
+            sudo apt-get install -y postgresql-client || apt-get install -y postgresql-client
+          fi
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..10}; do
+            if pg_isready -h localhost -p 55432 -U payouts_user -d payouts_db; then
+              echo "Postgres is up"
+              break
+            fi
+            echo "Waiting for Postgres..."
+            sleep 3
+          done
+
+      - name: Run migrations
+        run: |
+          poetry run python manage.py migrate --noinput
+
+      - name: Run Ruff lint
+        run: |
+          poetry run ruff check .
+
+      - name: Run mypy
+        run: |
+          poetry run mypy apps/
+
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest -v --cov=apps --cov-report=term-missing
