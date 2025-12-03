@@ -1,10 +1,19 @@
 """
 URL configuration for the payouts' app.
 
-The router and viewset registrations will be added once the API layer is
-implemented.
+Exposes the PayoutViewSet under the /api/payouts/ path via a DRF router.
 """
 
 from __future__ import annotations
 
-urlpatterns: list = []
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from apps.payouts.views import PayoutViewSet
+
+router = DefaultRouter()
+router.register("payouts", PayoutViewSet, basename="payout")
+
+urlpatterns = [
+    path("", include(router.urls)),
+]

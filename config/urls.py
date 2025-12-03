@@ -1,13 +1,13 @@
 """
 Root URL configuration for the payout management service.
 
-Currently exposes the Django admin; API routes will be added as the
-implementation progresses.
+Exposes the Django admin and the payouts API endpoints.
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/", include("apps.payouts.urls")),
 ]
