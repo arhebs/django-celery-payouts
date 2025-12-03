@@ -17,7 +17,10 @@ from apps.payouts.models import Payout
 _MAX_PAYOUT_AMOUNT = Decimal("999999999.99")
 
 
-def _validate_amount_common(value: Decimal, allow_none: bool = False) -> Decimal | None:
+def _validate_amount_common(
+        value: Decimal | None,
+        allow_none: bool = False,
+) -> Decimal | None:
     """Validate that amount is positive and within the configured maximum."""
     if value is None:
         if allow_none:

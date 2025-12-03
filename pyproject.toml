@@ -37,6 +37,26 @@ mypy = "*"
 django-stubs = "*"
 djangorestframework-stubs = "*"
 
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["apps", "config"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+strict_optional = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.base"
+
 [build-system]
 requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"

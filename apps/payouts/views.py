@@ -4,6 +4,8 @@ ViewSet implementations for the payouts application.
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -13,6 +15,7 @@ from drf_spectacular.utils import (
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 
 from apps.payouts.filters import PayoutFilter
 from apps.payouts.models import Payout
@@ -64,12 +67,13 @@ class PayoutViewSet(viewsets.ModelViewSet):
             return PayoutUpdateSerializer
         return PayoutSerializer
 
-    def perform_create(self, serializer: PayoutSerializer) -> None:
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
         """
         Delegate creation to the service layer and attach instance.
         """
-        payout = PayoutService.create_payout(serializer.validated_data)
-        serializer.instance = payout
+        payout_serializer = cast(PayoutSerializer, serializer)
+        payout = PayoutService.create_payout(payout_serializer.validated_data)
+        payout_serializer.instance = payout
 
     def update(self, request: Request, *args, **kwargs) -> Response:
         """Allow updates only for PENDING payouts."""
