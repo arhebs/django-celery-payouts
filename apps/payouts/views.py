@@ -5,6 +5,11 @@ ViewSet implementations for the payouts application.
 from __future__ import annotations
 
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import (
+    OpenApiExample,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -15,6 +20,31 @@ from apps.payouts.serializers import PayoutSerializer, PayoutUpdateSerializer
 from apps.payouts.services import PayoutService
 
 
+@extend_schema(tags=["Payouts"])
+@extend_schema_view(
+    list=extend_schema(
+        summary="List payouts",
+        description="Retrieve a paginated list of payouts with optional filtering.",
+    ),
+    create=extend_schema(
+        summary="Create payout",
+        description="Create a new payout and enqueue it for asynchronous processing.",
+        examples=[
+            OpenApiExample(
+                "Create payout example",
+                value={
+                    "amount": "250.00",
+                    "currency": "EUR",
+                    "recipient_details": {
+                        "account_number": "DE89370400440532013000",
+                        "bank_name": "Deutsche Bank",
+                    },
+                    "description": "Contractor payment - March 2025",
+                },
+            )
+        ],
+    ),
+)
 class PayoutViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing payouts via the REST API.
@@ -60,4 +90,3 @@ class PayoutViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
         return super().partial_update(request, *args, **kwargs)
-

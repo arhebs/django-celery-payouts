@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
     # Local apps
     "apps.payouts",
 ]
@@ -122,6 +123,14 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Payout Management API",
+    "DESCRIPTION": "API for creating and tracking payouts processed asynchronously via Celery.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Celery / Redis configuration (broker URLs only; Celery app wiring is in a later step)

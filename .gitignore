@@ -29,6 +29,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Generated artifacts
+schema.yaml
+
 # IDE/editor files
 .idea/
 .vscode/
