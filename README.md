@@ -323,8 +323,8 @@ deployment platform).
 Important variables:
 
 - `SECRET_KEY` – Django secret key (required in non‑debug environments)
-  +- `DEBUG` – `"true"` / `"false"` (string, case‑insensitive)
-  -- `ALLOWED_HOSTS` – comma‑separated list of allowed hosts
+- `DEBUG` – `"true"` / `"false"` (string, case‑insensitive)
+- `ALLOWED_HOSTS` – comma‑separated list of allowed hosts
 - `DATABASE_URL` – database connection string, e.g.:
     - `postgres://user:password@host:5432/dbname`
 - `REDIS_URL` – Redis connection string, e.g.:
@@ -365,6 +365,41 @@ make test
 
 ---
 
+## Verification Checklist
+
+To verify that the full stack works end‑to‑end:
+
+1. Start the Docker stack and run migrations (or use the Makefile):
+
+   ```bash
+   docker compose up -d
+   docker compose exec web python manage.py migrate --noinput
+   # or
+   make up
+   make migrate
+   ```
+
+2. Run the automated verification script:
+
+   ```bash
+   bash scripts/verify_setup.sh
+   ```
+
+   This script will:
+
+    - Ensure services are running
+    - Create a test payout via the API
+    - Wait for the Celery worker to process it and print the before/after payloads
+    - Check that the API docs endpoints respond with HTTP 200
+    - Execute the test suite with coverage inside the `web` container
+
+3. Optionally, open the docs in a browser:
+
+    - Swagger UI: <http://localhost:8000/api/docs/>
+    - ReDoc: <http://localhost:8000/api/redoc/>
+
+---
+
 ## Production Notes & Limitations
 
 This repository is optimized as a test project and reference implementation. A production deployment would typically add
@@ -402,4 +437,3 @@ You can exercise the same workflow locally using the `act` CLI if desired.
 
 This project is provided for evaluation and learning purposes. Use and adapt it within the constraints of your own
 organization or exercise requirements.
-
